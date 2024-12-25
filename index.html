@@ -1,0 +1,134 @@
+<html>
+<head>
+  <title>Video Galerie</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 800px;
+      position: relative;
+      background: white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .video-container {
+      position: relative;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+    }
+
+    video {
+      max-width: 100%;
+      border-radius: 10px;
+    }
+
+    .description {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 30px;
+      color: #333;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .arrow:hover {
+      background: rgba(255, 255, 255, 1);
+    }
+
+    .arrow.left {
+      left: 10px;
+    }
+
+    .arrow.right {
+      right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="video-container">
+      <video id="videoPlayer" controls>
+        <source src="Robin1.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="description" id="videoDescription"></div>
+    </div>
+    <div class="arrow left" onclick="prevVideo()">&#8249;</div>
+    <div class="arrow right" onclick="nextVideo()">&#8250;</div>
+  </div>
+
+  <script>
+    // Array mit Videos und individuellen Beschreibungen
+    const videos = [
+      { src: "Robin1.mp4", description: "Beschreibung für Robin1" },
+      { src: "Robin2.mp4", description: "Beschreibung für Robin2" },
+      { src: "Robin3.mp4", description: "Beschreibung für Robin3" },
+      { src: "Robin4.mp4", description: "Beschreibung für Robin4" },
+      { src: "Robin5.mp4", description: "Beschreibung für Robin5" },
+      { src: "Robin6.mp4", description: "Beschreibung für Robin6" },
+      { src: "Robin7.mp4", description: "Beschreibung für Robin7" },
+      { src: "Robin8.mp4", description: "Beschreibung für Robin8" },
+      { src: "Robin9.mp4", description: "Beschreibung für Robin9" },
+      { src: "Robin10.mp4", description: "Beschreibung für Robin10" },
+      { src: "Robin11.mp4", description: "Beschreibung für Robin11" }
+    ];
+
+    let currentIndex = 0;
+
+    const videoPlayer = document.getElementById("videoPlayer");
+    const videoDescription = document.getElementById("videoDescription");
+
+    // Funktion, um ein Video zu laden
+    function loadVideo(index) {
+      if (index < 0) index = videos.length - 1; // Zurück zum letzten Video
+      if (index >= videos.length) index = 0;   // Zurück zum ersten Video
+      currentIndex = index;
+
+      // Setze die Video-Quelle
+      videoPlayer.src = videos[currentIndex].src;
+
+      // Setze die individuelle Beschreibung
+      videoDescription.textContent = videos[currentIndex].description;
+
+      videoPlayer.load();
+    }
+
+    // Navigation zwischen Videos
+    function prevVideo() {
+      loadVideo(currentIndex - 1);
+    }
+
+    function nextVideo() {
+      loadVideo(currentIndex + 1);
+    }
+
+    // Initialisiere mit dem ersten Video
+    loadVideo(0);
+  </script>
+</body>
+</html>
