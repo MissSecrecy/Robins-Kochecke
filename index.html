@@ -73,6 +73,14 @@
     .arrow.right {
       right: 20px;
     }
+
+    .arrow.down {
+      top: auto;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 40px;
+    }
   </style>
 </head>
 <body>
@@ -85,6 +93,7 @@
     </div>
     <div class="arrow left" onclick="prevVideo()">&#8249;</div>
     <div class="arrow right" onclick="nextVideo()">&#8250;</div>
+    <div class="arrow down" onclick="toggleDescription()">&#x25BC;</div>
   </div>
 
   <script>
@@ -105,57 +114,27 @@
     let currentIndex = 0;
     const videoWrapper = document.getElementById("videoWrapper");
     const description = document.getElementById("description");
-    const container = document.getElementById("container");
 
-    // Swipe-Handling
-    let startX = 0;
-    let startY = 0;
-    let endX = 0;
-    let endY = 0;
-
-    container.addEventListener("touchstart", (e) => {
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-    });
-
-    container.addEventListener("touchmove", (e) => {
-      endX = e.touches[0].clientX;
-      endY = e.touches[0].clientY;
-    });
-
-    container.addEventListener("touchend", () => {
-      const deltaX = endX - startX;
-      const deltaY = endY - startY;
-
-      if (Math.abs(deltaY) > Math.abs(deltaX)) {
-        // Vertikale Bewegung
-        if (startY - endY > 50) {
-          // Nach oben wischen
-          showDescription();
-        } else if (endY - startY > 50) {
-          // Nach unten wischen
-          hideDescription();
-        }
+    // Funktion: Beschreibung anzeigen/verstecken
+    let isDescriptionVisible = false;
+    function toggleDescription() {
+      if (isDescriptionVisible) {
+        hideDescription();
       } else {
-        // Horizontale Bewegung
-        if (startX - endX > 50) {
-          // Nach links wischen
-          nextVideo();
-        } else if (endX - startX > 50) {
-          // Nach rechts wischen
-          prevVideo();
-        }
+        showDescription();
       }
-    });
+    }
 
     function showDescription() {
       videoWrapper.style.transform = "translateY(-100%)";
       description.style.transform = "translateY(-100%)";
+      isDescriptionVisible = true;
     }
 
     function hideDescription() {
       videoWrapper.style.transform = "translateY(0)";
       description.style.transform = "translateY(0)";
+      isDescriptionVisible = false;
     }
 
     // Funktion, um ein Video zu laden
