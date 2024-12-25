@@ -1,57 +1,63 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>Video Galerie</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fullscreen Video Gallery</title>
   <style>
     body {
       margin: 0;
+      overflow: hidden;
       font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
     }
 
-    .container {
-      width: 90%;
-      max-width: 800px;
-      position: relative;
-      background: white;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
+    /* Vollbild-Video */
     .video-container {
       position: relative;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 10px;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: black;
     }
 
     iframe, video {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
-      height: 400px;
+      height: 100%;
       border: none;
-      border-radius: 10px;
+      object-fit: cover;
     }
 
-    .description {
-      margin-top: 10px;
+    /* Beschreibung, die durch Swipe erscheint */
+    .description-container {
+      position: absolute;
+      bottom: -150px;
+      left: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      text-align: center;
+      padding: 20px;
+      transition: transform 0.5s ease;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
       font-size: 16px;
-      color: #333;
     }
 
+    .description-container.show {
+      transform: translateY(-150px);
+    }
+
+    /* Navigationspfeile */
     .arrow {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 30px;
-      color: #333;
-      background: rgba(255, 255, 255, 0.8);
+      font-size: 50px;
+      color: white;
+      background: rgba(0, 0, 0, 0.5);
       padding: 10px;
       border-radius: 50%;
       cursor: pointer;
@@ -59,28 +65,31 @@
     }
 
     .arrow:hover {
-      background: rgba(255, 255, 255, 1);
+      background: rgba(0, 0, 0, 0.8);
     }
 
     .arrow.left {
-      left: 10px;
+      left: 20px;
     }
 
     .arrow.right {
-      right: 10px;
+      right: 20px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="video-container">
-      <iframe id="youtubePlayer" style="display: none;"></iframe>
-      <video id="videoPlayer" controls style="display: none;">
-        <source src="" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <div class="description" id="videoDescription"></div>
+  <div class="video-container">
+    <!-- Video Player -->
+    <div id="videoPlayerContainer">
+      <iframe id="videoPlayer" src="https://www.youtube.com/embed/qHZO1JG1UfM" allowfullscreen></iframe>
     </div>
+
+    <!-- Beschreibung -->
+    <div class="description-container" id="descriptionContainer">
+      Beschreibung für Robin1
+    </div>
+
+    <!-- Navigationspfeile -->
     <div class="arrow left" onclick="prevVideo()">&#8249;</div>
     <div class="arrow right" onclick="nextVideo()">&#8250;</div>
   </div>
@@ -103,9 +112,8 @@
 
     let currentIndex = 0;
 
-    const videoPlayer = document.getElementById("videoPlayer");
-    const youtubePlayer = document.getElementById("youtubePlayer");
-    const videoDescription = document.getElementById("videoDescription");
+    const videoPlayerContainer = document.getElementById("videoPlayerContainer");
+    const videoDescription = document.getElementById("descriptionContainer");
 
     // Funktion, um ein Video zu laden
     function loadVideo(index) {
@@ -115,17 +123,26 @@
 
       const video = videos[currentIndex];
 
+      // Entferne vorherigen Inhalt des Containers
+      videoPlayerContainer.innerHTML = "";
+
+      // Video-Typ prüfen und passenden Player einfügen
       if (video.type === "youtube") {
-        // YouTube-Video laden
-        youtubePlayer.src = video.src;
-        youtubePlayer.style.display = "block";
-        videoPlayer.style.display = "none";
+        const iframe = document.createElement("iframe");
+        iframe.src = video.src;
+        iframe.allowFullscreen = true;
+        videoPlayerContainer.appendChild(iframe);
       } else if (video.type === "local") {
-        // Lokale Videoquelle laden
-        videoPlayer.src = video.src;
-        videoPlayer.style.display = "block";
-        youtubePlayer.style.display = "none";
-        videoPlayer.load();
+        const videoElement = document.createElement("video");
+        videoElement.controls = true;
+        videoElement.autoplay = true;
+
+        const source = document.createElement("source");
+        source.src = video.src;
+        source.type = "video/mp4";
+        videoElement.appendChild(source);
+
+        videoPlayerContainer.appendChild(videoElement);
       }
 
       // Setze die individuelle Beschreibung
@@ -140,6 +157,27 @@
     function nextVideo() {
       loadVideo(currentIndex + 1);
     }
+
+    // Swipe-Erkennung
+    let touchStartY = 0;
+    let touchEndY = 0;
+
+    function handleSwipe() {
+      if (touchStartY - touchEndY > 50) {
+        videoDescription.classList.add("show"); // Beschreibung anzeigen
+      } else if (touchEndY - touchStartY > 50) {
+        videoDescription.classList.remove("show"); // Beschreibung verstecken
+      }
+    }
+
+    document.addEventListener("touchstart", (e) => {
+      touchStartY = e.changedTouches[0].screenY;
+    });
+
+    document.addEventListener("touchend", (e) => {
+      touchEndY = e.changedTouches[0].screenY;
+      handleSwipe();
+    });
 
     // Initialisiere mit dem ersten Video
     loadVideo(0);
