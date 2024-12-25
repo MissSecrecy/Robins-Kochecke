@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fullscreen Video Gallery</title>
+  <title>Swipe Video Gallery</title>
   <style>
     body {
       margin: 0;
@@ -11,66 +11,47 @@
       font-family: Arial, sans-serif;
     }
 
-    /* Vollbild-Video */
-    .video-container {
+    .container {
       position: relative;
       width: 100vw;
       height: 100vh;
-      overflow: hidden;
       background: black;
+      overflow: hidden;
     }
 
-    iframe, video {
+    .video-wrapper {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      border: none;
-      object-fit: cover;
+      transition: transform 0.5s ease;
     }
 
-    /* Beschreibung */
-    .description-container {
+    iframe, video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border: none;
+    }
+
+    .description {
       position: absolute;
-      bottom: -150px;
+      top: 100%;
       left: 0;
       width: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      text-align: center;
-      padding: 20px;
-      transition: transform 0.5s ease;
-      border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
-      font-size: 16px;
-    }
-
-    .description-container.show {
-      transform: translateY(-150px);
-    }
-
-    /* Beschreibungsschaltfläche */
-    .toggle-description {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255, 255, 255, 0.8);
+      height: 100%;
+      background: white;
       color: black;
-      padding: 10px 20px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
-      transition: background 0.3s ease;
+      overflow-y: auto;
+      padding: 20px;
+      box-sizing: border-box;
+      font-size: 18px;
+      line-height: 1.5;
+      transform: translateY(0);
+      transition: transform 0.5s ease;
     }
 
-    .toggle-description:hover {
-      background: rgba(255, 255, 255, 1);
-    }
-
-    /* Navigationspfeile */
     .arrow {
       position: absolute;
       top: 50%;
@@ -82,10 +63,7 @@
       border-radius: 50%;
       cursor: pointer;
       user-select: none;
-    }
-
-    .arrow:hover {
-      background: rgba(0, 0, 0, 0.8);
+      z-index: 10;
     }
 
     .arrow.left {
@@ -98,27 +76,18 @@
   </style>
 </head>
 <body>
-  <div class="video-container">
-    <!-- Video Player -->
-    <div id="videoPlayerContainer">
+  <div class="container">
+    <div class="video-wrapper" id="videoWrapper">
       <iframe id="videoPlayer" src="https://www.youtube.com/embed/qHZO1JG1UfM" allowfullscreen></iframe>
     </div>
-
-    <!-- Beschreibung -->
-    <div class="description-container" id="descriptionContainer">
+    <div class="description" id="description">
       Beschreibung für Robin1
     </div>
-
-    <!-- Beschreibungsschaltfläche -->
-    <div class="toggle-description" onclick="toggleDescription()">Beschreibung anzeigen</div>
-
-    <!-- Navigationspfeile -->
     <div class="arrow left" onclick="prevVideo()">&#8249;</div>
     <div class="arrow right" onclick="nextVideo()">&#8250;</div>
   </div>
 
   <script>
-    // Array mit Videos und individuellen Beschreibungen
     const videos = [
       { src: "https://www.youtube.com/embed/qHZO1JG1UfM", description: "Beschreibung für Robin1", type: "youtube" },
       { src: "https://www.youtube.com/embed/QxTQ7tOVkpY", description: "Beschreibung für Robin2", type: "youtube" },
@@ -134,66 +103,82 @@
     ];
 
     let currentIndex = 0;
-    const videoPlayerContainer = document.getElementById("videoPlayerContainer");
-    const videoDescription = document.getElementById("descriptionContainer");
-    const toggleButton = document.querySelector(".toggle-description");
+    const videoWrapper = document.getElementById("videoWrapper");
+    const description = document.getElementById("description");
+
+    // Swipe-Handling
+    let startY = 0;
+    let endY = 0;
+
+    videoWrapper.addEventListener("touchstart", (e) => {
+      startY = e.touches[0].clientY;
+    });
+
+    videoWrapper.addEventListener("touchmove", (e) => {
+      endY = e.touches[0].clientY;
+    });
+
+    videoWrapper.addEventListener("touchend", () => {
+      if (startY - endY > 50) {
+        // Nach oben wischen
+        showDescription();
+      }
+    });
+
+    function showDescription() {
+      videoWrapper.style.transform = "translateY(-100%)";
+      description.style.transform = "translateY(-100%)";
+    }
+
+    function hideDescription() {
+      videoWrapper.style.transform = "translateY(0)";
+      description.style.transform = "translateY(0)";
+    }
+
+    description.addEventListener("touchstart", (e) => {
+      startY = e.touches[0].clientY;
+    });
+
+    description.addEventListener("touchmove", (e) => {
+      endY = e.touches[0].clientY;
+    });
+
+    description.addEventListener("touchend", () => {
+      if (endY - startY > 50) {
+        // Nach unten wischen
+        hideDescription();
+      }
+    });
 
     // Funktion, um ein Video zu laden
     function loadVideo(index) {
-      if (index < 0) index = videos.length - 1; // Zurück zum letzten Video
-      if (index >= videos.length) index = 0;   // Zurück zum ersten Video
+      if (index < 0) index = videos.length - 1;
+      if (index >= videos.length) index = 0;
       currentIndex = index;
 
       const video = videos[currentIndex];
+      const videoPlayer = document.createElement(video.type === "youtube" ? "iframe" : "video");
 
-      // Entferne vorherigen Inhalt des Containers
-      videoPlayerContainer.innerHTML = "";
+      videoPlayer.src = video.src;
+      videoPlayer.allowFullscreen = true;
+      videoPlayer.style.width = "100%";
+      videoPlayer.style.height = "100%";
 
-      // Video-Typ prüfen und passenden Player einfügen
-      if (video.type === "youtube") {
-        const iframe = document.createElement("iframe");
-        iframe.src = video.src;
-        iframe.allowFullscreen = true;
-        videoPlayerContainer.appendChild(iframe);
-      } else if (video.type === "local") {
-        const videoElement = document.createElement("video");
-        videoElement.controls = true;
-        videoElement.autoplay = true;
+      videoWrapper.innerHTML = "";
+      videoWrapper.appendChild(videoPlayer);
 
-        const source = document.createElement("source");
-        source.src = video.src;
-        source.type = "video/mp4";
-        videoElement.appendChild(source);
+      description.textContent = video.description;
 
-        videoPlayerContainer.appendChild(videoElement);
-      }
-
-      // Setze die individuelle Beschreibung
-      videoDescription.textContent = video.description;
-
-      // Beschreibung verstecken und Button zurücksetzen
-      videoDescription.classList.remove("show");
-      toggleButton.textContent = "Beschreibung anzeigen";
+      // Zurücksetzen des Layouts
+      hideDescription();
     }
 
-    // Navigation zwischen Videos
     function prevVideo() {
       loadVideo(currentIndex - 1);
     }
 
     function nextVideo() {
       loadVideo(currentIndex + 1);
-    }
-
-    // Beschreibung umschalten
-    function toggleDescription() {
-      if (videoDescription.classList.contains("show")) {
-        videoDescription.classList.remove("show");
-        toggleButton.textContent = "Beschreibung anzeigen";
-      } else {
-        videoDescription.classList.add("show");
-        toggleButton.textContent = "Beschreibung ausblenden";
-      }
     }
 
     // Initialisiere mit dem ersten Video
