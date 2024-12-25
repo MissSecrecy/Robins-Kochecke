@@ -54,8 +54,8 @@
 
     .arrow {
       position: absolute;
-      top: auto;
-      bottom: 10%; /* Initially at the bottom */
+      top: 50%;
+      transform: translateY(-50%);
       font-size: 40px;
       color: white;
       background: rgba(0, 0, 0, 0.5);
@@ -64,7 +64,6 @@
       cursor: pointer;
       user-select: none;
       z-index: 10;
-      transition: bottom 0.5s ease, transform 0.5s ease;
     }
 
     .arrow.left {
@@ -76,8 +75,11 @@
     }
 
     .arrow.down {
+      position: absolute;
+      bottom: 10%; /* Initially at the bottom */
       left: 50%;
       transform: translateX(-50%) rotate(180deg); /* Initially points down */
+      transition: bottom 0.5s ease, transform 0.5s ease;
     }
   </style>
 </head>
@@ -170,6 +172,37 @@
     function nextVideo() {
       loadVideo(currentIndex + 1);
     }
+
+    // Swiping-Handling
+    let startX = 0;
+    let startY = 0;
+
+    document.addEventListener("touchstart", (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    });
+
+    document.addEventListener("touchend", (e) => {
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+
+      const diffX = endX - startX;
+      const diffY = endY - startY;
+
+      if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX > 50) {
+          prevVideo();
+        } else if (diffX < -50) {
+          nextVideo();
+        }
+      } else {
+        if (diffY > 50 && isDescriptionVisible) {
+          hideDescription();
+        } else if (diffY < -50 && !isDescriptionVisible) {
+          showDescription();
+        }
+      }
+    });
 
     // Initialisiere mit dem ersten Video
     loadVideo(0);
