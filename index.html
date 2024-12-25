@@ -76,7 +76,7 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" id="container">
     <div class="video-wrapper" id="videoWrapper">
       <iframe id="videoPlayer" src="https://www.youtube.com/embed/qHZO1JG1UfM" allowfullscreen></iframe>
     </div>
@@ -105,23 +105,46 @@
     let currentIndex = 0;
     const videoWrapper = document.getElementById("videoWrapper");
     const description = document.getElementById("description");
+    const container = document.getElementById("container");
 
     // Swipe-Handling
+    let startX = 0;
     let startY = 0;
+    let endX = 0;
     let endY = 0;
 
-    videoWrapper.addEventListener("touchstart", (e) => {
+    container.addEventListener("touchstart", (e) => {
+      startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
     });
 
-    videoWrapper.addEventListener("touchmove", (e) => {
+    container.addEventListener("touchmove", (e) => {
+      endX = e.touches[0].clientX;
       endY = e.touches[0].clientY;
     });
 
-    videoWrapper.addEventListener("touchend", () => {
-      if (startY - endY > 50) {
-        // Nach oben wischen
-        showDescription();
+    container.addEventListener("touchend", () => {
+      const deltaX = endX - startX;
+      const deltaY = endY - startY;
+
+      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        // Vertikale Bewegung
+        if (startY - endY > 50) {
+          // Nach oben wischen
+          showDescription();
+        } else if (endY - startY > 50) {
+          // Nach unten wischen
+          hideDescription();
+        }
+      } else {
+        // Horizontale Bewegung
+        if (startX - endX > 50) {
+          // Nach links wischen
+          nextVideo();
+        } else if (endX - startX > 50) {
+          // Nach rechts wischen
+          prevVideo();
+        }
       }
     });
 
@@ -134,21 +157,6 @@
       videoWrapper.style.transform = "translateY(0)";
       description.style.transform = "translateY(0)";
     }
-
-    description.addEventListener("touchstart", (e) => {
-      startY = e.touches[0].clientY;
-    });
-
-    description.addEventListener("touchmove", (e) => {
-      endY = e.touches[0].clientY;
-    });
-
-    description.addEventListener("touchend", () => {
-      if (endY - startY > 50) {
-        // Nach unten wischen
-        hideDescription();
-      }
-    });
 
     // Funktion, um ein Video zu laden
     function loadVideo(index) {
