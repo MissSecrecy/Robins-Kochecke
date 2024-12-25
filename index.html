@@ -30,7 +30,7 @@
       object-fit: cover;
     }
 
-    /* Beschreibung, die durch Swipe erscheint */
+    /* Beschreibung */
     .description-container {
       position: absolute;
       bottom: -150px;
@@ -48,6 +48,26 @@
 
     .description-container.show {
       transform: translateY(-150px);
+    }
+
+    /* Beschreibungsschaltfläche */
+    .toggle-description {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.8);
+      color: black;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    .toggle-description:hover {
+      background: rgba(255, 255, 255, 1);
     }
 
     /* Navigationspfeile */
@@ -89,6 +109,9 @@
       Beschreibung für Robin1
     </div>
 
+    <!-- Beschreibungsschaltfläche -->
+    <div class="toggle-description" onclick="toggleDescription()">Beschreibung anzeigen</div>
+
     <!-- Navigationspfeile -->
     <div class="arrow left" onclick="prevVideo()">&#8249;</div>
     <div class="arrow right" onclick="nextVideo()">&#8250;</div>
@@ -111,9 +134,9 @@
     ];
 
     let currentIndex = 0;
-
     const videoPlayerContainer = document.getElementById("videoPlayerContainer");
     const videoDescription = document.getElementById("descriptionContainer");
+    const toggleButton = document.querySelector(".toggle-description");
 
     // Funktion, um ein Video zu laden
     function loadVideo(index) {
@@ -147,6 +170,10 @@
 
       // Setze die individuelle Beschreibung
       videoDescription.textContent = video.description;
+
+      // Beschreibung verstecken und Button zurücksetzen
+      videoDescription.classList.remove("show");
+      toggleButton.textContent = "Beschreibung anzeigen";
     }
 
     // Navigation zwischen Videos
@@ -158,26 +185,16 @@
       loadVideo(currentIndex + 1);
     }
 
-    // Swipe-Erkennung
-    let touchStartY = 0;
-    let touchEndY = 0;
-
-    function handleSwipe() {
-      if (touchStartY - touchEndY > 50) {
-        videoDescription.classList.add("show"); // Beschreibung anzeigen
-      } else if (touchEndY - touchStartY > 50) {
-        videoDescription.classList.remove("show"); // Beschreibung verstecken
+    // Beschreibung umschalten
+    function toggleDescription() {
+      if (videoDescription.classList.contains("show")) {
+        videoDescription.classList.remove("show");
+        toggleButton.textContent = "Beschreibung anzeigen";
+      } else {
+        videoDescription.classList.add("show");
+        toggleButton.textContent = "Beschreibung ausblenden";
       }
     }
-
-    document.addEventListener("touchstart", (e) => {
-      touchStartY = e.changedTouches[0].screenY;
-    });
-
-    document.addEventListener("touchend", (e) => {
-      touchEndY = e.changedTouches[0].screenY;
-      handleSwipe();
-    });
 
     // Initialisiere mit dem ersten Video
     loadVideo(0);
